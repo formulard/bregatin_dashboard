@@ -1,19 +1,5 @@
-clean_excel_llegadas <- function(file_path, start) {
-  file_path |>
-    readxl::read_excel(skip = 4) |>
-    janitor::clean_names() |>
-    dplyr::rename(aeropuerto = 1) |>
-    janitor::remove_empty(which = c("rows", "cols")) |>
-    dplyr::mutate(
-      residencia = stringr::str_extract(aeropuerto, "NO RESIDENTES|RESIDENTES|TOTAL"),
-      nacionalidad = stringr::str_extract(
-        aeropuerto, "DOMINICANOS|EXTRANJEROS|NO RESIDENTES|RESIDENTES|TOTAL")
-    ) |>
-    tidyr::fill(residencia, nacionalidad, .direction = "down") |> 
-    dplyr::filter(
-      !aeropuerto %in% c("TOTAL PASAJEROS", "RESIDENTES", "DOMINICANOS", "EXTRANJEROS", "NO RESIDENTES")
-    )
-}
+
+
 
 get_llegadas_aereas <- function() {
   current_year <- lubridate::year(Sys.Date())
@@ -57,8 +43,12 @@ purrr::walk2(
     .progress = TRUE
 )
 
-temporal_paths[1] |>
-  readxl::read_excel(skip = 4) |>
+purrr::map(
+  temporal_paths,
+  readxl::read_excel
+)
+temporal_paths[2] |>
+  readxl::read_excel() |>
   janitor::clean_names() |>
   dplyr::rename(aeropuerto = 1) |>
   janitor::remove_empty(which = c("rows", "cols")) |>
