@@ -64,4 +64,3 @@ get_llegadas <- function(years) {
   purrr::map(years, get_llegadas_single, .progress = TRUE) |>
     purrr::list_rbind()
 }
-
