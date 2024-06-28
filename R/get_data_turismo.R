@@ -2,7 +2,7 @@
 #' @export
 get_llegadas_single <- function(year) {
   year <- as.character(year)
-  
+
   url <- paste0(
     "https://cdn.bancentral.gov.do/documents/estadisticas/sector-turismo/documents/",
     "lleg_total_", year, ".xls"
