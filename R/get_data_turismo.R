@@ -60,6 +60,9 @@ get_llegadas_single <- function(year) {
     dplyr::select(fecha, year, mes, aeropuerto, nacionalidad, residencia, llegadas)
 }
 
+#' Descargar y preparar llegadas aéreas de múltiples años
+#' 
+#' @export
 get_llegadas <- function(years) {
   purrr::map(years, get_llegadas_single, .progress = TRUE) |>
     purrr::list_rbind()

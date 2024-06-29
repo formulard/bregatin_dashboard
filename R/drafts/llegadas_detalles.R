@@ -60,7 +60,10 @@ prepare_caracteristicas <- function(year) {
   ) |>
     purrr::list_rbind(names_to = "mes") |>
     dplyr::mutate(fecha = lubridate::make_date(year, mes, 1)) |>
-    dplyr::select(fecha, year, mes, aeropuerto, categoria_region = region, pais_status = pais, dplyr::everything())
+    dplyr::select(fecha, year, mes, aeropuerto, categoria_region = region, pais_status = pais, dplyr::everything()) |>
+    dplyr::mutate(
+      dplyr::across(sexo_total:motivo_otro, as.numeric)
+    )
 }
 
 prepare_caracteristicas(2020)
