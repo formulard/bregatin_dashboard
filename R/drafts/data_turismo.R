@@ -211,4 +211,3 @@ data_turistas <- get_turistas()
 
 data_turistas %>%
     dplyr::select(year, mes, aeropuerto, region, pais, dplyr::contains('sexo'))
-
