@@ -1,3 +1,6 @@
+box::use(
+  utils[download.file,]
+)
 #' Descargar y preparar la llegadas aereas de un solo año
 #' @export
 get_llegadas_single <- function(year) {
