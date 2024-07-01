@@ -37,3 +37,16 @@ llegadas |>
   e_legend(show = FALSE) |>
   e_tooltip() |>
   e_title("Llegadas aéreas 2024, según aeropuerto")
+
+
+llegadas |>
+  filter(year == 2024, nacionalidad == "Total") |>
+    summarise(
+  llegadas = sum(llegadas),
+  .by = aeropuerto
+  ) |>
+  arrange(llegadas) |>
+  e_chart(aeropuerto) |>
+  e_pie(llegadas) |>
+  e_tooltip() |>
+  e_title("Llegadas aéreas 2024, según aeropuerto")
