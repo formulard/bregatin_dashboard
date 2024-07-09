@@ -1,16 +1,19 @@
 ---
-execute:
-  echo: false
-  warning: false
-  message: false
+title: "| Turismo con enfoque en Puerto Plata"
+format: 
+  dashboard:
+    logo: website/logo.png
+    theme:
+      - custom.scss
 ---
+
+## Row {height=33%}
 
 ```{r setup}
 library(dplyr)
 library(reactable)
 library(htmltools)
 library(shiny)
-library(highcharter)
 library(echarts4r)
 ```
 
@@ -28,7 +31,7 @@ star_stats <- tibble::tribble(
 ```
 
 ```{r stars_table}
-
+#| title: Rating de los visitantes según destino
 rating_stars <- function(rating, max_rating = 5) {
   star_icon <- function(empty = FALSE) {
     tagAppendAttributes(
@@ -82,7 +85,7 @@ star_stats |>
           bar <- div(
             class = "bar-chart",
             style = list(marginRight = "0.375rem"),
-            div(class = "bar", style = list(width = width, backgroundColor = "gray80"))
+            div(class = "bar", style = list(width = width, backgroundColor = "gray"))
           )
           div(class = "bar-cell", span(class = "number", value), bar)
         }
@@ -93,21 +96,26 @@ star_stats |>
 
 
 ```{r}
+#| title: Llegadas aéreas totales
+
 llegadas |>
   filter(residencia == "Total", year > 2013) |>
   summarise(
     llegadas = sum(llegadas, na.rm = TRUE),
     .by = year
   ) |>
+  rename(Llegadas = llegadas) |>
   e_chart(year) |>
-  e_bar(llegadas) |>
+  e_bar(Llegadas) |>
   e_grid(left = "15%") |>
   e_legend(show = FALSE) |>
-  e_tooltip() |>
-  e_title("Llegadas aéreas")
+  e_tooltip()
 ```
 
+## Row {height=35%}
+
 ```{r}
+#| title: Llegadas aéreas 2024, según aeropuerto
 llegadas |>
   filter(year == 2024, nacionalidad == "Total") |>
     summarise(
@@ -120,7 +128,28 @@ llegadas |>
   e_flip_coords() |>
   e_legend(show = FALSE) |>
   e_tooltip() |>
-  e_grid(left = "25%") |>
-  e_title("Llegadas aéreas 2024, según aeropuerto")
+  e_grid(left = "25%")
+```
+
+```{r}
+#| title: Distribución de las llegadas aéreas según aeropuerto
+#| 
+llegadas |>
+  filter(year == 2024, nacionalidad == "Total") |>
+  mutate(
+    aeropuerto = ifelse(
+      aeropuerto %in% c("Las Americas", "Punta Cana", "Puerto Plata", "Cibao"),
+      aeropuerto,
+      "Otros"
+    )
+  ) |>
+  summarise(
+    llegadas = round(sum(llegadas)),
+    .by = aeropuerto
+  ) |>
+  e_chart(aeropuerto) |>
+  e_pie(llegadas) |> 
+  e_legend(show = FALSE) |>
+  e_tooltip()
 ```
 

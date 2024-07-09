@@ -4,7 +4,7 @@ project:
 website:
   title: ""
   navbar:
-    background: dark
+    background: "#4ACDD6"
     logo: logo.png
 
 format:
