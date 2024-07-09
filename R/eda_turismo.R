@@ -186,3 +186,33 @@ star_stats |>
       punta_cana   = colDef(name = "Punta Cana")
     )
   )
+
+turistas_2024 <- prepare_caracteristicas(2024)
+
+turistas_2024 |>
+  filter(aeropuerto == "Todos", categoria_region == "TOTAL") |>
+  select(year, Masculino = sexo_masculino, Femenino = sexo_femenino) |>
+  summarise(across(-year, \(x) round(sum(x)))) |> 
+  tidyr::pivot_longer(
+    everything(),
+    names_to = "Sexo",
+    values_to = "Llegadas"
+  ) |>
+  e_chart(Sexo) |>
+  e_pie(Llegadas, label = list(show=FALSE)) |>
+  e_tooltip()
+
+turistas_2024 |>
+  filter(aeropuerto == "Todos", categoria_region == "TOTAL") |>
+  select(year, Hotel = alojamiento_hotel, Otro = alojamiento_otro) |>
+  summarise(across(-year, \(x) round(sum(x)))) |> 
+  tidyr::pivot_longer(
+    everything(),
+    names_to = "Tipo alojamiento",
+    values_to = "Llegadas"
+  ) |>
+  e_chart(`Tipo alojamiento`) |>
+  e_pie(Llegadas, label = list(show=FALSE)) |>
+  e_tooltip()
+  
+
