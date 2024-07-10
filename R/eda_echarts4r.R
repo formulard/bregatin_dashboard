@@ -189,6 +189,11 @@ star_stats |>
 
 turistas_2024 <- prepare_caracteristicas(2024)
 
+turismo_caracteristicas <- purrr::map(2010:2024, prepare_caracteristicas)
+rutismo_caracteristicas 
+
+saveRDS(turismo_caracteristicas)
+
 turistas_2024 |>
   filter(aeropuerto == "Todos", categoria_region == "TOTAL") |>
   select(year, Masculino = sexo_masculino, Femenino = sexo_femenino) |>

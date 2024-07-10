@@ -2,25 +2,87 @@
 title: "| Turismo con enfoque en Puerto Plata"
 format: 
   dashboard:
+    orientation: columns
     logo: website/logo.png
     theme:
       - custom.scss
 ---
 
-## Row {height=33%}
+## Column {width=60%}
 
 ```{r setup}
 library(dplyr)
 library(reactable)
 library(htmltools)
 library(shiny)
-library(echarts4r)
+library(highcharter)
+
+llegadas <- readRDS(here::here("data/llegadas.rds"))
+countries <- readRDS(here::here("data/countries_code.rds"))
+llegadas_2024 <- readRDS(here::here("data/llegadas_2024.rds"))
+
+source(here::here("R/functions/ratings_table.R"))
+source(here::here("R/functions/get_data_turismo.R"))
 ```
 
-```{r data}
-llegadas <- readRDS(here::here("data/llegadas.rds"))
+```{r}
+#| title: Visitantes según país de residencia
 
-star_stats <- tibble::tribble(
+map_countries <- "custom/world-lowres"
+map_data <- get_data_from_map(download_map_data(map_countries))
+
+llegadas_by_country <- llegadas_2024 |>
+  summarise(
+    llegadas = sum(sexo_total),
+    .by = pais_status
+  )  |>
+  rename(country = pais_status) |>
+  right_join(countries) |>
+  right_join(map_data) |>
+  select(code = `hc-a2`, country, llegadas) |>
+  mutate(
+    llegadas_log = log(llegadas),
+    llegadas_label = scales::comma(llegadas)
+  )
+
+hcmap(
+  map_countries,
+  data = llegadas_by_country,
+  value = "llegadas_log",
+  joinBy = c("hc-a2", "code"),
+  name = "Llegadas",
+  dataLabels = list(enabled = FALSE),
+  borderColor = "#FAFAFA",
+  borderWidth = 0.1,
+  tooltip = list(pointFormat = "{point.country} {point.llegadas_label}")
+)
+```
+
+
+```{r}
+#| title: Distribución según aeropuerto
+
+llegadas |>
+  filter(year == 2024, nacionalidad == "Total") |>
+  summarise(
+    llegadas = round(sum(llegadas)),
+    .by = aeropuerto
+  ) |>
+  mutate(
+    aeropuerto = forcats::fct_reorder(aeropuerto, llegadas)
+  ) |>
+  arrange(desc(llegadas)) |>
+  hchart("bar", hcaes(x = aeropuerto, y = llegadas)) |>
+  hc_xAxis(title = list(text = NA)) |> 
+  hc_yAxis(title = list(text = NA))
+```
+
+## Column {width=40%}
+
+```{r data}
+#| title: Rating se los destinos
+
+rating_data <- tibble::tribble(
   ~stars, ~puerto_plata, ~punta_cana,
       1L,            0L,          0L,
       2L,            4L,          3L,
@@ -28,128 +90,39 @@ star_stats <- tibble::tribble(
       4L,           52L,         47L,
       5L,            7L,         50L
   )
+
+ratings_table(rating_data)
 ```
-
-```{r stars_table}
-#| title: Rating de los visitantes según destino
-rating_stars <- function(rating, max_rating = 5) {
-  star_icon <- function(empty = FALSE) {
-    tagAppendAttributes(
-      shiny::icon("star"),
-      style = paste("color:", if (empty) "#edf0f2" else "orange"),
-      "aria-hidden" = "true"
-    )
-  }
-
-  rounded_rating <- floor(rating + 0.5)  # always round up
-  stars <- lapply(seq_len(max_rating), function(i) {
-    if (i <= rounded_rating) star_icon() else star_icon(empty = TRUE)
-  })
-
-  label <- sprintf("%s out of %s stars", rating, max_rating)
-  div(title = label, role = "img", stars)
-}
-
-star_stats |>
-  reactable(
-    highlight = TRUE,
-    class = "bergatin-table",
-    defaultColDef = colDef(headerClass = "header"),
-    columns = list(
-      stars = colDef(
-        name = "Puntuación", cell = function(value) rating_stars(value),
-        align = "center"
-      ),
-      puerto_plata = colDef(
-        name = "Puerto Plata",
-        align = "left",
-        cell = \(value) {
-          width <- paste0(value * 100 / max(star_stats$puerto_plata), "%")
-          value <- scales::percent(value / sum(star_stats$puerto_plata), accuracy = 0.1)
-          value <- format(value, width = 6, justify = "right")
-          bar <- div(
-            class = "bar-chart",
-            style = list(marginRight = "0.375rem"),
-            div(class = "bar", style = list(width = width, backgroundColor = "#4ACDD6"))
-          )
-          div(class = "bar-cell", span(class = "number", value), bar)
-        }
-      ),
-      punta_cana   = colDef(
-        name = "Punta Cana",
-        align = "left",
-        cell = \(value) {
-          width <- paste0(value * 100 / max(star_stats$punta_cana), "%")
-          value <- scales::percent(value / sum(star_stats$punta_cana), accuracy = 0.1)
-          value <- format(value, width = 5, justify = "right")
-          bar <- div(
-            class = "bar-chart",
-            style = list(marginRight = "0.375rem"),
-            div(class = "bar", style = list(width = width, backgroundColor = "gray"))
-          )
-          div(class = "bar-cell", span(class = "number", value), bar)
-        }
-      )
-    )
-  )
-```
-
 
 ```{r}
 #| title: Llegadas aéreas totales
 
 llegadas |>
-  filter(residencia == "Total", year > 2013) |>
-  summarise(
-    llegadas = sum(llegadas, na.rm = TRUE),
-    .by = year
-  ) |>
-  rename(Llegadas = llegadas) |>
-  e_chart(year) |>
-  e_bar(Llegadas) |>
-  e_grid(left = "15%") |>
-  e_legend(show = FALSE) |>
-  e_tooltip()
-```
-
-## Row {height=35%}
-
-```{r}
-#| title: Llegadas aéreas 2024, según aeropuerto
-llegadas |>
-  filter(year == 2024, nacionalidad == "Total") |>
-    summarise(
-  llegadas = sum(llegadas),
-  .by = aeropuerto
-  ) |>
-  arrange(llegadas) |>
-  e_chart(aeropuerto) |>
-  e_bar(llegadas) |>
-  e_flip_coords() |>
-  e_legend(show = FALSE) |>
-  e_tooltip() |>
-  e_grid(left = "25%")
-```
-
-```{r}
-#| title: Distribución de las llegadas aéreas según aeropuerto
-#| 
-llegadas |>
-  filter(year == 2024, nacionalidad == "Total") |>
-  mutate(
-    aeropuerto = ifelse(
-      aeropuerto %in% c("Las Americas", "Punta Cana", "Puerto Plata", "Cibao"),
-      aeropuerto,
-      "Otros"
-    )
-  ) |>
+  filter(year > 2010, nacionalidad == "Total") |>
   summarise(
     llegadas = round(sum(llegadas)),
-    .by = aeropuerto
+    .by = c(year)
   ) |>
-  e_chart(aeropuerto) |>
-  e_pie(llegadas) |> 
-  e_legend(show = FALSE) |>
-  e_tooltip()
+  hchart("column", hcaes(x = year, y = llegadas)) |> 
+  hc_xAxis(title = list(text = NULL)) |> 
+  hc_yAxis(title = list(text = "Millones")) |>
+  hc_tooltip(
+    pointFormat ="Llegadas: {point.y}"
+  )
 ```
 
+```{r}
+#| title: Visitantes según sexo
+
+llegadas_2024 |>
+  filter(aeropuerto == "Todos", categoria_region == "TOTAL") |>
+  select(year, Masculino = sexo_masculino, Femenino = sexo_femenino) |>
+  summarise(across(-year, \(x) round(sum(x)))) |> 
+  tidyr::pivot_longer(
+    everything(),
+    names_to = "Sexo",
+    values_to = "Llegadas"
+  ) |>
+  hchart("pie", hcaes(x = Sexo, y = Llegadas))
+
+```

@@ -29,3 +29,13 @@ body {
 .bar {
   height: 100%;
 }
+
+.bergatin-table {
+  font-size: 0.8rem;
+}
+
+@media screen and (max-width: 600px) {
+  .navbar-title-text {
+    display: none;
+  }
+}
