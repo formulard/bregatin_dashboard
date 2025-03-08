@@ -1,3 +1,3 @@
-## Demo Dashboard turismo en puerto plata
+## Demo - Dashboard turismo en puerto plata
 
-Deployment: https://formulard.github.io/bregatin_dashboard/
+Deployment: https://formulard.github.io/turismo_dashboard/
