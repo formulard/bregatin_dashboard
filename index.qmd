@@ -3,8 +3,9 @@ title: "| Turismo con enfoque en Puerto Plata"
 format: 
   dashboard:
     orientation: columns
-    logo: logo.png
+    logo: formula.png
     theme:
+      - flatly
       - custom.scss
 ---
 
@@ -35,7 +36,7 @@ llegadas_by_country <- llegadas_2024 |>
   summarise(
     llegadas = sum(sexo_total),
     .by = pais_status
-  )  |>
+  ) |>
   rename(country = pais_status) |>
   right_join(countries) |>
   right_join(map_data) |>
@@ -73,23 +74,36 @@ llegadas |>
   ) |>
   arrange(desc(llegadas)) |>
   hchart("bar", hcaes(x = aeropuerto, y = llegadas)) |>
-  hc_xAxis(title = list(text = NA)) |> 
-  hc_yAxis(title = list(text = NA))
+  hc_xAxis(title = list(text = NA)) |>
+  hc_yAxis(title = list(text = NA)) |>
+  hc_colors("#434449")
 ```
 
 ## Column {width=40%}
 
 ```{r data}
-#| title: Rating se los destinos
+#| title: Rating de los destinos
 
 rating_data <- tibble::tribble(
-  ~stars, ~puerto_plata, ~punta_cana,
-      1L,            0L,          0L,
-      2L,            4L,          3L,
-      3L,           55L,         96L,
-      4L,           52L,         47L,
-      5L,            7L,         50L
-  )
+  ~stars,
+  ~puerto_plata,
+  ~punta_cana,
+  1L,
+  0L,
+  0L,
+  2L,
+  4L,
+  3L,
+  3L,
+  55L,
+  96L,
+  4L,
+  52L,
+  47L,
+  5L,
+  7L,
+  50L
+)
 
 ratings_table(rating_data)
 ```
@@ -103,12 +117,13 @@ llegadas |>
     llegadas = round(sum(llegadas)),
     .by = c(year)
   ) |>
-  hchart("column", hcaes(x = year, y = llegadas)) |> 
-  hc_xAxis(title = list(text = NULL)) |> 
+  hchart("column", hcaes(x = year, y = llegadas)) |>
+  hc_xAxis(title = list(text = NULL)) |>
   hc_yAxis(title = list(text = "Millones")) |>
   hc_tooltip(
-    pointFormat ="Llegadas: {point.y}"
-  )
+    pointFormat = "Llegadas: {point.y}"
+  ) |>
+  hc_colors("#434449")
 ```
 
 ```{r}
@@ -117,12 +132,11 @@ llegadas |>
 llegadas_2024 |>
   filter(aeropuerto == "Todos", categoria_region == "TOTAL") |>
   select(year, Masculino = sexo_masculino, Femenino = sexo_femenino) |>
-  summarise(across(-year, \(x) round(sum(x)))) |> 
+  summarise(across(-year, \(x) round(sum(x)))) |>
   tidyr::pivot_longer(
     everything(),
     names_to = "Sexo",
     values_to = "Llegadas"
   ) |>
   hchart("pie", hcaes(x = Sexo, y = Llegadas))
-
 ```

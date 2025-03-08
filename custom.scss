@@ -6,7 +6,7 @@ body {
 }
 
 .navbar-brand img {
-  max-height: 40px!important;
+  max-height: 40px !important;
 }
 
 .bar-cell {
@@ -32,6 +32,13 @@ body {
 
 .bergatin-table {
   font-size: 0.8rem;
+}
+
+.navbar,
+.navbar-light {
+  background-color: white !important;
+  color: oklch(0.37 0.013 285.805) !important;
+  box-shadow: 0 0 5px #000;
 }
 
 @media screen and (max-width: 600px) {
